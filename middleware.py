@@ -3,13 +3,19 @@ import streamlit as st
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
+from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
-from langchain.chat_models import ChatAnthropic
+from langchain.chat_models import ChatOpenAI
+import sys
 import os
 
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 load_dotenv()
-chat = ChatAnthropic()
+chat = ChatOpenAI(temperature=0)
+
 
 def get_text_from_link(link):
     loaders = UnstructuredURLLoader(urls=[link])
@@ -21,7 +27,7 @@ def split_text(data):
     docs = text_splitter.split_documents(data)
     return docs
 
-def get_embeddings(docs): # will get embeddings from docs and then store them in a vector database
+def get_embeddingsChroma(docs): # will get embeddings from docs and then store them in a vector database
     embeddings = OpenAIEmbeddings()
     vectorstore = Chroma.from_documents(
         docs, embeddings, persist_directory='vectorstore'
@@ -29,9 +35,13 @@ def get_embeddings(docs): # will get embeddings from docs and then store them in
     vectorstore.persist()
     return vectorstore
 
+def get_embeddings(docs): # will get embeddings from docs and then store them in a vector database
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.from_documents(docs, embeddings)
+    return vectorstore
 
 def getting_ans(query, vectorstore):
-    llm = ChatAnthropic()
+    llm = ChatOpenAI()
     chain = RetrievalQA.from_chain_type(llm=llm, retriever=vectorstore.as_retriever(), verbose=True, chain_type="stuff")
     result = chain({"query": query}, return_only_outputs=True)
     return result['result']

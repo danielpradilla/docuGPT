@@ -6,7 +6,7 @@ from middleware import main
 # All calls (to other functions) from this function
 def main_bot():
     st.set_page_config(page_title="docuGPT", page_icon=":robot_face:", layout="centered")
-    st.title("Go ham, the bot is all yours now.")
+    st.title("You can ask now")
     # st.text_input(label="Enter your message here: ", key="bot_chat", placeholder="Type your message here...", on_change=main(st.session_state["link"], st.session_state["bot_chat"]))
     st.text_input(label="Enter your message here: ", key="ques", placeholder="Type your message here...")
     print(st.session_state["ques"])
